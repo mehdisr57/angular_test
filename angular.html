@@ -8,7 +8,7 @@
                 ng-mouseleave="hideBackground()"
                 ng-repeat="row in rows"
                 id="{{'id'+$id}}">
-			<td>{{$id}}</td>
+			<td>{{row.id}}</td>
             <td><span ng-show="isOnEdit[row.id]">{{row.name}}</span><input ng-hide="isOnEdit[row.id]" type="text" ng-model="cacheEdit[row.id].name"/></td>
             <td><span ng-show="isOnEdit[row.id]">{{row.family}}</span><input ng-hide="isOnEdit[row.id]" type="text" ng-model="cacheEdit[row.id].family"/></td>
             <td>{{row.name + " " + row.family}}</td>
