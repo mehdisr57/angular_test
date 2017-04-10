@@ -9,8 +9,8 @@
                 ng-repeat="row in rows"
                 id="{{'id'+$id}}">
 			<td>{{row.id}}</td>
-            <td><span ng-show="isOnEdit[row.id]">{{row.name}}</span><input ng-hide="isOnEdit[row.id]" type="text" ng-model="cacheEdit[row.id].name"/></td>
-            <td><span ng-show="isOnEdit[row.id]">{{row.family}}</span><input ng-hide="isOnEdit[row.id]" type="text" ng-model="cacheEdit[row.id].family"/></td>
+            <td><span ng-show="isOnEdit[row.id]">{{row.name}}</span><input ng-hide="isOnEdit[row.id]" type="text" ng-model="cacheEdit[row.id].name" ng-keyup="$event.keyCode == 13 && saveRow()" /></td>
+            <td><span ng-show="isOnEdit[row.id]">{{row.family}}</span><input ng-hide="isOnEdit[row.id]" type="text" ng-model="cacheEdit[row.id].family" ng-keyup="$event.keyCode == 13 && saveRow()" /></td>
             <td>{{row.name + " " + row.family}}</td>
             <td>
                 <input ng-show="isOnEdit[row.id]" type="button" ng-click="editRow()" value="Edit">
@@ -83,6 +83,10 @@
             $scope.rows.splice(_index, 0, _copy);
         };
 
+        $scope.submitFunc = function ($event) {
+			console.log($event);			
+		};
+		
         $scope.editRow = function () {
             $scope.isOnEdit[this.row.id] = false;
             var _index = $this.utility().findIndexById(this.row.id);
