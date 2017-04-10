@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<body>
+<div ng-app="myApp" ng-controller="tableController">
+    <table border="1" cellpadding="5" cellspacing="0" id="myTable">
+        <tr
+                ng-mouseover="showBackground()"
+                ng-mouseleave="hideBackground()"
+                ng-repeat="row in rows"
+                id="{{'id'+$id}}">
+			<td>{{$id}}</td>
+            <td><span ng-show="isOnEdit[row.id]">{{row.name}}</span><input ng-hide="isOnEdit[row.id]" type="text" ng-model="cacheEdit[row.id].name"/></td>
+            <td><span ng-show="isOnEdit[row.id]">{{row.family}}</span><input ng-hide="isOnEdit[row.id]" type="text" ng-model="cacheEdit[row.id].family"/></td>
+            <td>{{row.name + " " + row.family}}</td>
+            <td>
+                <input ng-show="isOnEdit[row.id]" type="button" ng-click="editRow()" value="Edit">
+                <input ng-hide="isOnEdit[row.id]" type="button" ng-click="saveRow()" value="Save">
+                <input ng-hide="isOnEdit[row.id]" type="button" ng-click="resetRow()" value="Reset">
+            </td>
+        </tr>
+    </table>
+    <input type="button" value="Send Data" ng-click="sendData()">
+    <input type="button" value="Add Data" ng-click="addData()">
+    <span>{{result}}</span>
+</div>
+<script type="text/javascript" src="lib/js/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="lib/js/angular/angular.min.js"></script>
+<script type="text/javascript">
+    var app = angular.module("myApp", []);
+
+    app.controller("tableController", function ($scope, $http, services) {
+        var $this = this;
+
+        $this.utility = function () {
+            function _init() {
+                $scope.rows = [
+                    {id: 1, name: "Mehdi", family: "Sadat Razavi"},
+                    {id: 2, name: "Mohsen", family: "Sadat Razavi"},
+                    {id: 3, name: "Sana", family: "Sadat Razavi"}
+                ];
+
+                $scope.isOnEdit = [];
+                $scope.cacheEdit = [];
+            }
+
+            function _clearEdit() {
+                $.each($scope.rows, function (k, v) {
+                    $scope.isOnEdit[v.id] = true;
+                });
+            }
+
+            function _findIndexById(_id) {
+                for (var _index = 0; _index < $scope.rows.length; _index++) {
+                    if ($scope.rows[_index].id == _id) {
+                        return _index;
+                    }
+                }
+            }
+
+            return {
+                init: _init,
+                findIndexById: _findIndexById,
+                clearEdit: _clearEdit
+            }
+        };
+
+        $this.utility().init();
+        $this.utility().clearEdit();
+
+        $scope.showBackground = function () {
+            $("#id" + this.$id).css("background", "#abcabc");
+        };
+
+        $scope.hideBackground = function () {
+            $("#id" + this.$id).css("background", "white");
+        };
+
+        $scope.saveRow = function () {
+            $scope.isOnEdit[this.row.id] = true;
+            var _index = $this.utility().findIndexById(this.row.id);
+            var _copy = angular.copy($scope.cacheEdit[this.row.id]);
+            $scope.rows.splice(_index, 1);
+            $scope.rows.splice(_index, 0, _copy);
+        };
+
+        $scope.editRow = function () {
+            $scope.isOnEdit[this.row.id] = false;
+            var _index = $this.utility().findIndexById(this.row.id);
+            var _copy = angular.copy($scope.rows[_index]);
+            $scope.cacheEdit[this.row.id] = _copy;
+        };
+
+        $scope.resetRow = function () {
+            $scope.isOnEdit[this.row.id] = true;
+        };
+		
+		$scope.addData = function () {
+			var _newId = services.findMax($scope.rows, "id") + 1;
+			var _newRow = {id: _newId, name: "", family: ""};
+			
+			$scope.rows.push(_newRow);
+			$scope.isOnEdit[_newId] = false;
+			$scope.cacheEdit[_newId] = _newRow;
+		};
+
+        $scope.sendData = function () {
+            $this.utility().clearEdit();
+            $scope.result = angular.toJson($scope.rows);
+
+            var data = $.param({
+                inputBranch: "",
+                licenseNumber: "",
+                status: "R"
+            });
+
+            var config = {
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'
+                }
+            };
+
+            $http.get('http://localhost:8080/license', data)
+            //$http.post("mysite/post/3", $scope.result, {})
+                    .success(function (data, status) {
+                        console.log("success");
+                        console.log(data);
+                    })
+                    .error(function (data, status, header, config) {
+                        var _responseDetails = "Data: " + data +
+                                "<hr />status: " + status +
+                                "<hr />headers: " + header +
+                                "<hr />config: " + config;
+
+                        console.log(_responseDetails);
+                    });
+        };
+    });
+	
+	app.service('services', function() {
+		this.findMax = function (rows, key) {
+			var max = rows[0][key];
+			$.each(rows, function(k,v){
+				if(v[key] > max){
+					max = v[key];
+				}
+			});
+			return max;
+		}
+	});
+
+</script>
+</body>
+</html>
